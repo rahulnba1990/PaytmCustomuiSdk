@@ -117,7 +117,7 @@ Start paytm via Paytm UPI intent flow
 
 ####Example
 ```javascript
-PaytmCustomuiSdk.payViaUPI().then(txnInfo => {
+PaytmCustomuiSdk.payViaUPI(paymentFlow, selectedAppName).then(txnInfo => {
     // returns TransactionInfo object data
     const appNames = JSON.parse(apps);
 }).catch(err=>{
