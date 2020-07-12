@@ -121,7 +121,7 @@ public class RNPaytmCustomuiSdkModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void initPaytmSDK(String mid, String orderId, String txnToken, double amount, boolean isNativePlusEnabled,
+    public void initPaytmSDK(String mid, String orderId, String txnToken, double amount,
                              boolean isAssistEnabled, boolean loggingEnabled, String customEndpoint, String merchantCallbackUrl, Promise promise) {
         PaytmSDK.Builder builder = new PaytmSDK.Builder(reactContext, mid, orderId, txnToken, amount, transactionListener);
         builder.setAssistEnabled(isAssistEnabled);
