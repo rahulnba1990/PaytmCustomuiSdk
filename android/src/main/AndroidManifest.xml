@@ -3,7 +3,7 @@
     package="com.paytm.customui">
 
     <application>
-        <activity android:name="com.paytm.customui.PaymentActivity"></activity>
+        <activity android:name=".PaymentProcessActivity"></activity>
     </application>
 
 </manifest>

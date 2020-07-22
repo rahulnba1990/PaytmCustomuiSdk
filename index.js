@@ -16,10 +16,16 @@ class PaytmCustomuiSdk {
         return RNPaytmCustomuiSdk.getUPIAppsInstalled();
     }
 
-    static initPaytmSDK(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled,
-                        customEndpoint, merchantCallbackUrl) {
-        return RNPaytmCustomuiSdk.initPaytmSDK(mid, orderId, txnToken, amount,
-            isAssistEnabled, loggingEnabled, customEndpoint, merchantCallbackUrl);
+    static startWalletTransaction(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled,
+                        customEndpoint, merchantCallbackUrl, paymentFlow) {
+        return RNPaytmCustomuiSdk.startWalletTransaction(mid, orderId, txnToken, amount,
+            isAssistEnabled, loggingEnabled, customEndpoint, merchantCallbackUrl, paymentFlow);
+    }
+
+    static startUPIIntentTransaction(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled,
+                                  customEndpoint, merchantCallbackUrl, paymentFlow, appName) {
+        return RNPaytmCustomuiSdk.startUPIIntentTransaction(mid, orderId, txnToken, amount,
+            isAssistEnabled, loggingEnabled, customEndpoint, merchantCallbackUrl, paymentFlow, appName);
     }
 
     static userHasSavedInstruments(mid) {
@@ -44,10 +50,6 @@ class PaytmCustomuiSdk {
 
     static setUpiMpin(vpa, bankAccountString) {
         return RNPaytmCustomuiSdk.setUpiMpin(vpa, bankAccountString);
-    }
-
-    static payViaUPI(paymentFlow, selectedAppName) {
-        return RNPaytmCustomuiSdk.payViaUPI(paymentFlow, selectedAppName);
     }
 }
 
