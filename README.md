@@ -25,6 +25,8 @@ Current version works for Android only. Will support ios integration very soon.
 
 #### Android
 
+For react >= 16.0 auto linking is supported, for react < 16.0 use custom linking
+#####Custom linking
 1. Open up `android/app/src/main/java/[...]/MainActivity.java`
     - Add `import com.reactlibrary.RNPaytmCustomuiSdkPackage;` to the imports at the top of the file
     - Add `new RNPaytmCustomuiSdkPackage()` to the list returned by the `getPackages()` method
@@ -62,25 +64,6 @@ PaytmCustomuiSdk.isPaytmAppInstalled().then(paytmInstalled => {
 });
 ```
 
-####initPaytmSDK()
-Initialize Paytm SDK. It is required before starting any transaction.
-1. Input Params:
-    - mid - String - provided by Paytm
-    - orderId - String
-    - txnToken - String - received from initiate transaction API response via server
-    - amount - float
-    - isAssistEnabled - boolean
-    - loggingEnabled - boolean
-2. Returns "SUCCESS" as response string.
-
-####Example
-```javascript
-PaytmCustomuiSdk.initPaytmSDK(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled,
-     customEndpoint, merchantCallbackUrl).then(response => {
-    // returns "SUCCESS" as response after inititialization
-});
-```
-
 ####fetchAuthCode()
 Fetch auth code for Paytm.
 1. Input Params:
@@ -108,18 +91,25 @@ PaytmCustomuiSdk.getUPIAppsInstalled().then(apps => {
 });
 ```
 
-####payViaUPI()
+####startUPIIntentTransaction(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled, customEndpoint, merchantCallbackUrl, paymentFlow, appName)
 Start paytm via Paytm UPI intent flow
 1. Input Params:
+    - mid - String - provided by Paytm
+    - orderId - String
+    - txnToken - String - received from initiate transaction API response via server
+    - amount - float
+    - isAssistEnabled - boolean
+    - loggingEnabled - boolean
+    - customEndpoint - String - provided by paytm,
+    - merchantCallbackUrl - String - optional in case you want txn result to be sent to server
     - paymentFlow - String - 	It’s value can be NONE,HYBRID,ADDNPAY
     - selectedAppName - any one value selected from app list you get it by calling getUPIAppsInstalled()
 2. Returns TransactionInfo object data as string.
 
 ####Example
 ```javascript
-PaytmCustomuiSdk.payViaUPI(paymentFlow, selectedAppName).then(txnInfo => {
+PaytmCustomuiSdk.startUPIIntentTransaction(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled, customEndpoint, merchantCallbackUrl, paymentFlow, selectedAppName).then(txnInfo => {
     // returns TransactionInfo object data
-    const appNames = JSON.parse(apps);
 }).catch(err=>{
     
 });
@@ -149,4 +139,104 @@ PaytmCustomuiSdk.payViaUPI(paymentFlow, selectedAppName).then(txnInfo => {
     "PROMO_RESPCODE": "702",
     "PROMO_STATUS": "FAILURE"
 }
+```
+
+####startWalletTransaction(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled, customEndpoint, merchantCallbackUrl, paymentFlow)
+Start Paytm wallet transaction
+1. Input Params:
+    - mid - String - provided by Paytm
+    - orderId - String
+    - txnToken - String - received from initiate transaction API response via server
+    - amount - float
+    - isAssistEnabled - boolean
+    - loggingEnabled - boolean
+    - customEndpoint - String - provided by paytm,
+    - merchantCallbackUrl - String - optional in case you want txn result to be sent to server
+    - paymentFlow - String - It’s value can be NONE,HYBRID,ADDNPAY
+2. Returns TransactionInfo object data as string.
+
+####Example
+```javascript
+PaytmCustomuiSdk.startWalletTransaction(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled, customEndpoint, merchantCallbackUrl, paymentFlow).then(txnInfo => {
+    // returns TransactionInfo object data
+    
+}).catch(err=>{
+    
+});
+```
+#####Sample TransactionInfo data:
+```
+{
+    "ORDERID": "PARCEL15816826759",
+    "MID": "AliSub58582630351896",
+    "TXNID": "20200214111212800110168052313701129",
+    "TXNAMOUNT": "1.00",
+    "PAYMENTMODE": "CC",
+    "CURRENCY": "INR",
+    "TXNDATE": "2020-02-14 17:48:13.0",
+    "STATUS": "TXN_SUCCESS",
+    "RESPCODE": "01",
+    "RESPMSG": "Txn Success",
+    "MERC_UNQ_REF": "test4",
+    "UDF_1": "test1",
+    "UDF_2": "test2",
+    "UDF_3": "test3",
+    "ADDITIONAL_INFO": "test5",
+    "GATEWAYNAME": "ICICIPAY",
+    "BANKTXNID": "68568621250",
+    "BANKNAME": "HSBC",
+    "PROMO_CAMP_ID": "PROMO CODE",
+    "PROMO_RESPCODE": "702",
+    "PROMO_STATUS": "FAILURE"
+}
+```
+
+####fetchUPIBalance(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled, customEndpoint, merchantCallbackUrl, vpa, bankAccountString)
+Start Paytm wallet transaction
+1. Input Params:
+    - mid - String - provided by Paytm
+    - orderId - String
+    - txnToken - String - received from initiate transaction API response via server
+    - amount - float
+    - isAssistEnabled - boolean
+    - loggingEnabled - boolean
+    - customEndpoint - String - provided by paytm,
+    - merchantCallbackUrl - String - optional in case you want txn result to be sent to server
+    - vpa - String - Virtual Payment Adress(eg.xyz@paytm)
+    - bankAccountString - String - JSON string representing a bank account for upi
+2. Returns TransactionInfo object data as string.
+
+####Example
+```javascript
+PaytmCustomuiSdk.startWalletTransaction(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled, customEndpoint, merchantCallbackUrl, vpa, bankAccountString).then(balanceInfo => {
+    // returns balance information
+    
+}).catch(err=>{
+    
+});
+```
+
+####setUpiMpin(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled, customEndpoint, merchantCallbackUrl, vpa, bankAccountString)
+Start Paytm wallet transaction
+1. Input Params:
+    - mid - String - provided by Paytm
+    - orderId - String
+    - txnToken - String - received from initiate transaction API response via server
+    - amount - float
+    - isAssistEnabled - boolean
+    - loggingEnabled - boolean
+    - customEndpoint - String - provided by paytm,
+    - merchantCallbackUrl - String - optional in case you want txn result to be sent to server
+    - vpa - String - Virtual Payment Adress(eg.xyz@paytm)
+    - bankAccountString - String - JSON string representing a bank account for upi
+2. Returns TransactionInfo object data as string.
+
+####Example
+```javascript
+PaytmCustomuiSdk.startWalletTransaction(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled, customEndpoint, merchantCallbackUrl, vpa, bankAccountString).then(status => {
+    // returns transaction status
+    
+}).catch(err=>{
+    
+});
 ```

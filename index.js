@@ -28,6 +28,18 @@ class PaytmCustomuiSdk {
             isAssistEnabled, loggingEnabled, customEndpoint, merchantCallbackUrl, paymentFlow, appName);
     }
 
+    static fetchUPIBalance(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled,
+                                  customEndpoint, merchantCallbackUrl, upiId, bankAccountJson) {
+        return RNPaytmCustomuiSdk.fetchUPIBalance(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled,
+                                  customEndpoint, merchantCallbackUrl, upiId, bankAccountJson);
+    }
+
+    static setUpiMpin(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled,
+                                  customEndpoint, merchantCallbackUrl, vpa, bankAccountString) {
+        return RNPaytmCustomuiSdk.setUpiMpin(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled,
+                                  customEndpoint, merchantCallbackUrl, vpa, bankAccountString);
+    }
+
     static userHasSavedInstruments(mid) {
         return RNPaytmCustomuiSdk.userHasSavedInstruments(mid);
     }
@@ -42,14 +54,6 @@ class PaytmCustomuiSdk {
 
     static getNetBankingList() {
         return RNPaytmCustomuiSdk.getNetBankingList();
-    }
-
-    static fetchUPIBalance(upiId, bankAccountJson) {
-        return RNPaytmCustomuiSdk.fetchUPIBalance(upiId, bankAccountJson);
-    }
-
-    static setUpiMpin(vpa, bankAccountString) {
-        return RNPaytmCustomuiSdk.setUpiMpin(vpa, bankAccountString);
     }
 }
 

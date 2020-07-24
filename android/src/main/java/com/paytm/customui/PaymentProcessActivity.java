@@ -2,17 +2,17 @@ package com.paytm.customui;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Toast;
 
 import com.facebook.react.bridge.Promise;
+import com.facebook.react.bridge.ReactMethod;
 import com.google.gson.Gson;
 
 import net.one97.paytm.nativesdk.PaytmSDK;
 import net.one97.paytm.nativesdk.app.PaytmSDKCallbackListener;
 import net.one97.paytm.nativesdk.dataSource.PaytmPaymentsUtilRepository;
+import net.one97.paytm.nativesdk.dataSource.models.UpiDataRequestModel;
 import net.one97.paytm.nativesdk.dataSource.models.UpiIntentRequestModel;
 import net.one97.paytm.nativesdk.dataSource.models.WalletRequestModel;
 import net.one97.paytm.nativesdk.instruments.upicollect.models.UpiOptionsModel;
@@ -27,6 +27,8 @@ public class PaymentProcessActivity extends AppCompatActivity implements PaytmSD
     private PaytmPaymentsUtilRepository paymentsUtilRepository = PaytmSDK.getPaymentsUtilRepository();
 
     private PaytmSDK paytmSDK = null;
+    private final int FETCH_UPI_BALANCE_REQUEST_CODE = 100;
+    private final int SET_UPI_MPIN_REQUEST_CODE = 101;
     private final int TXN_START_CODE = 103;
 
 
@@ -35,14 +37,20 @@ public class PaymentProcessActivity extends AppCompatActivity implements PaytmSD
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_payment_process);
         Intent intent = this.getIntent();
-        String paymentAction = intent.getStringExtra("paymentMode");
-        if(paymentAction != null) {
+        String paymentAction = intent.getStringExtra("paymentAction");
+        if (paymentAction != null) {
             switch (paymentAction) {
                 case "WALLET":
                     startWalletTransaction(intent);
                     break;
                 case "UPI_INTENT":
                     startUPIIntentTransaction(intent);
+                    break;
+                case "FETCH_UPI_BALANCE":
+                    fetchUPIBalance(intent);
+                    break;
+                case "SET_UPI_MPIN":
+                    setUpiMpin(intent);
                     break;
                 default:
                     break;
@@ -74,17 +82,17 @@ public class PaymentProcessActivity extends AppCompatActivity implements PaytmSD
     private void startWalletTransaction(Intent intent) {
         initPaytmSdk(intent);
         String paymentFlow = intent.getStringExtra("paymentFlow");
-        if(paymentFlow == null) {
+        if (paymentFlow == null) {
             paymentFlow = "NONE";
         }
         WalletRequestModel walletRequestModel = new WalletRequestModel(paymentFlow);
-        Toast.makeText(this, "payviawallet", Toast.LENGTH_LONG).show();
         paytmSDK.startTransaction(this, walletRequestModel);
     }
 
     private void startUPIIntentTransaction(Intent intent) {
+        initPaytmSdk(intent);
         String paymentFlow = intent.getStringExtra("paymentFlow");
-        if(paymentFlow == null) {
+        if (paymentFlow == null) {
             paymentFlow = "NONE";
         }
         String selectedAppName = intent.getStringExtra("appName");
@@ -92,9 +100,40 @@ public class PaymentProcessActivity extends AppCompatActivity implements PaytmSD
         for (UpiOptionsModel app : apps) {
             if (app.getAppName().equalsIgnoreCase(selectedAppName)) {
                 UpiIntentRequestModel upiCollectRequestModel = new UpiIntentRequestModel(paymentFlow, selectedAppName, app.getResolveInfo().activityInfo);
-                Toast.makeText(this, "payviaupiintent", Toast.LENGTH_LONG).show();
                 paytmSDK.startTransaction(this, upiCollectRequestModel);
             }
+        }
+    }
+
+    private void fetchUPIBalance(Intent intent) {
+        initPaytmSdk(intent);
+        String upiId = intent.getStringExtra("upiId");
+        String bankAccountJson = intent.getStringExtra("bankAccountJson");
+        if (upiId != null && bankAccountJson != null) {
+            UpiDataRequestModel upiDataRequestModel = new UpiDataRequestModel(upiId, bankAccountJson, FETCH_UPI_BALANCE_REQUEST_CODE);
+            paytmSDK.fetchUpiBalance(this, upiDataRequestModel);
+        } else {
+            Intent mIntent = new Intent();
+            mIntent.putExtra("response", "TXN_FAILURE");
+            setResult(RESULT_OK, mIntent);
+            finish();
+            paytmSDK.clear();
+        }
+    }
+
+    private void setUpiMpin(Intent intent) {
+        initPaytmSdk(intent);
+        String vpa = intent.getStringExtra("vpa");
+        String bankAccountString = intent.getStringExtra("bankAccountString");
+        if (vpa != null && bankAccountString != null) {
+            UpiDataRequestModel upiDataRequestModel = new UpiDataRequestModel(vpa, bankAccountString, SET_UPI_MPIN_REQUEST_CODE);
+            paytmSDK.fetchUpiBalance(this, upiDataRequestModel);
+        } else {
+            Intent mIntent = new Intent();
+            mIntent.putExtra("response", "TXN_FAILURE");
+            setResult(RESULT_OK, mIntent);
+            finish();
+            paytmSDK.clear();
         }
     }
 
@@ -103,37 +142,45 @@ public class PaymentProcessActivity extends AppCompatActivity implements PaytmSD
         if (transactionInfo != null) {
             if (transactionInfo.getTxnInfo() != null) {
                 String s = new Gson().toJson(transactionInfo.getTxnInfo());
-                Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
                 Intent mIntent = new Intent();
-                mIntent.putExtra("result", s);
+                mIntent.putExtra("response", s);
                 setResult(RESULT_OK, mIntent);
-                finishActivity(TXN_START_CODE);
+                finish();
                 paytmSDK.clear();
             }
         } else {
             Intent mIntent = new Intent();
-            mIntent.putExtra("result", "TXN_FAILURE");
+            mIntent.putExtra("response", "TXN_FAILURE");
             setResult(RESULT_OK, mIntent);
-            finishActivity(TXN_START_CODE);
+            finish();
             paytmSDK.clear();
         }
     }
 
     @Override
     public void networkError() {
-        mPromise.reject(new Exception("NETWORK_ERROR"));
+        Intent mIntent = new Intent();
+        mIntent.putExtra("response", "NETWORK_ERROR");
+        setResult(RESULT_OK, mIntent);
+        finish();
         paytmSDK.clear();
     }
 
     @Override
     public void onBackPressedCancelTransaction() {
-        mPromise.reject(new Exception("USER_CANCELLED"));
+        Intent mIntent = new Intent();
+        mIntent.putExtra("response", "USER_CANCELLED");
+        setResult(RESULT_OK, mIntent);
+        finish();
         paytmSDK.clear();
     }
 
     @Override
     public void onGenericError(int i, String s) {
-        mPromise.reject(new Exception("GENERIC_ERROR:" + s));
+        Intent mIntent = new Intent();
+        mIntent.putExtra("response", "GENERIC_ERROR:" + s);
+        setResult(RESULT_OK, mIntent);
+        finish();
         paytmSDK.clear();
     }
 }
