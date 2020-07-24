@@ -1,12 +1,11 @@
 package com.paytm.customui;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.facebook.react.bridge.Promise;
-import com.facebook.react.bridge.ReactMethod;
 import com.google.gson.Gson;
 
 import net.one97.paytm.nativesdk.PaytmSDK;
