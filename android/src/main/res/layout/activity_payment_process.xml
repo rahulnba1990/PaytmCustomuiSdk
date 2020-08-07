@@ -25,13 +25,13 @@
 
         <TextView
             android:id="@+id/textView"
-            android:layout_width="173dp"
-            android:layout_height="61dp"
+            android:layout_width="292dp"
+            android:layout_height="53dp"
             android:layout_below="@+id/progressBar3"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="36dp"
-            android:text="Processing Payment"
+            android:layout_marginTop="44dp"
             android:gravity="center"
+            android:text="Processing Payment. Please wait for payment success and do not press back button or close the app."
             tools:layout_editor_absoluteX="121dp"
             tools:layout_editor_absoluteY="387dp" />
     </RelativeLayout>

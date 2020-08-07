@@ -36,7 +36,6 @@ public class RNPaytmCustomuiSdkModule extends ReactContextBaseJavaModule {
     private final ReactApplicationContext reactContext;
     private Promise mPromise;
     private PaytmPaymentsUtilRepository paymentsUtilRepository = PaytmSDK.getPaymentsUtilRepository();
-    private PaytmSDK paytmSDK = null;
     private final int FETCH_UPI_BALANCE_REQUEST_CODE = 100;
     private final int SET_UPI_MPIN_REQUEST_CODE = 101;
     private final int TXN_START_CODE = 103;
@@ -53,23 +52,19 @@ public class RNPaytmCustomuiSdkModule extends ReactContextBaseJavaModule {
                         break;
                     case SET_UPI_MPIN_REQUEST_CODE:
                         mPromise.resolve(data.getStringExtra("response"));
-                        paytmSDK.clear();
                         break;
                     case SDKConstants.REQUEST_CODE_UPI_APP:
                         String result = data.getStringExtra("Status");
                         if (result != null && result.equalsIgnoreCase("SUCCESS")) {
                             mPromise.resolve("SUCCESS");
-                            paytmSDK.clear();
                         } else {
                             mPromise.resolve(data.getStringExtra("Status"));
                         }
-                        paytmSDK.clear();
                         break;
                     case TXN_START_CODE:
                         mPromise.resolve(data.getStringExtra("response"));
                         break;
                     default:
-                        paytmSDK.clear();
 
                 }
             }

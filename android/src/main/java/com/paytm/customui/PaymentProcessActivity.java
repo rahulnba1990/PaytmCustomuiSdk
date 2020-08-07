@@ -30,6 +30,11 @@ public class PaymentProcessActivity extends AppCompatActivity implements PaytmSD
     private final int SET_UPI_MPIN_REQUEST_CODE = 101;
     private final int TXN_START_CODE = 103;
 
+    @Override
+    public void onBackPressed() {
+        //do nothing
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
