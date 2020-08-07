@@ -1,3 +1,12 @@
 android/.idea
 android/.gradle
 android/.idea/workspace.xml
+android/.idea/workspace.xml
+android/.idea/modules/android.iml
+android/.idea/caches/build_file_checksums.ser
+android/.gradle/checksums/sha1-checksums.bin
+android/.gradle/checksums/md5-checksums.bin
+android/.gradle/checksums/checksums.lock
+android/.gradle/buildOutputCleanup/outputFiles.bin
+android/.gradle/buildOutputCleanup/buildOutputCleanup.lock
+android/.gradle/6.1.1/fileHashes/fileHashes.lock
