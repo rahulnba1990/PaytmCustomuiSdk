@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 
 import net.one97.paytm.nativesdk.PaytmSDK;
+import net.one97.paytm.nativesdk.Utils.Server;
 import net.one97.paytm.nativesdk.common.Constants.SDKConstants;
 import net.one97.paytm.nativesdk.common.widget.PaytmConsentCheckBox;
 import net.one97.paytm.nativesdk.dataSource.PaytmPaymentsUtilRepository;
@@ -89,7 +90,7 @@ public class RNPaytmCustomuiSdkModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void fetchAuthCode(String clientId, Promise promise) {
+    public void fetchAuthCode(String clientId, boolean isStaging, Promise promise) {
         PaytmConsentCheckBox paytmConsentCheckBox = new PaytmConsentCheckBox(reactContext);
         paytmConsentCheckBox.setChecked(true);
         String code = paymentsUtilRepository.fetchAuthCode(reactContext, clientId);
@@ -114,9 +115,9 @@ public class RNPaytmCustomuiSdkModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void startWalletTransaction(String mid, String orderId, String txnToken, double amount, boolean isAssistEnabled, boolean loggingEnabled,
-                             String customEndpoint, String merchantCallbackUrl, String paymentFlow, Promise promise) {
+                             String customEndpoint, String merchantCallbackUrl, String paymentFlow, boolean isStaging, Promise promise) {
         Bundle bundle = new Bundle();
-        Intent intent = setupIntentMetadata(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled, customEndpoint, merchantCallbackUrl);
+        Intent intent = setupIntentMetadata(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled, customEndpoint, merchantCallbackUrl, isStaging);
         intent.putExtra("paymentAction", "WALLET");
         intent.putExtra("paymentFlow", paymentFlow);
         reactContext.startActivityForResult(intent, TXN_START_CODE, bundle);
@@ -125,9 +126,9 @@ public class RNPaytmCustomuiSdkModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void startUPIIntentTransaction(String mid, String orderId, String txnToken, double amount, boolean isAssistEnabled, boolean loggingEnabled,
-                                       String customEndpoint, String merchantCallbackUrl, String paymentFlow, String appName, Promise promise) {
+                                       String customEndpoint, String merchantCallbackUrl, String paymentFlow, String appName, boolean isStaging, Promise promise) {
         Bundle bundle = new Bundle();
-        Intent intent = setupIntentMetadata(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled, customEndpoint, merchantCallbackUrl);
+        Intent intent = setupIntentMetadata(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled, customEndpoint, merchantCallbackUrl, isStaging);
         intent.putExtra("paymentAction", "UPI_INTENT");
         intent.putExtra("paymentFlow", paymentFlow);
         intent.putExtra("appName", appName);
@@ -137,9 +138,9 @@ public class RNPaytmCustomuiSdkModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void fetchUPIBalance(String mid, String orderId, String txnToken, double amount, boolean isAssistEnabled, boolean loggingEnabled,
-                                String customEndpoint, String merchantCallbackUrl, String upiId, String bankAccountJson, Promise promise) {
+                                String customEndpoint, String merchantCallbackUrl, String upiId, String bankAccountJson, boolean isStaging, Promise promise) {
         Bundle bundle = new Bundle();
-        Intent intent = setupIntentMetadata(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled, customEndpoint, merchantCallbackUrl);
+        Intent intent = setupIntentMetadata(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled, customEndpoint, merchantCallbackUrl, isStaging);
         intent.putExtra("paymentAction", "FETCH_UPI_BALANCE");
         intent.putExtra("upiId", upiId);
         intent.putExtra("bankAccountJson", bankAccountJson);
@@ -149,9 +150,9 @@ public class RNPaytmCustomuiSdkModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void setUpiMpin(String mid, String orderId, String txnToken, double amount, boolean isAssistEnabled, boolean loggingEnabled,
-                           String customEndpoint, String merchantCallbackUrl, String vpa, String bankAccountString, Promise promise) {
+                           String customEndpoint, String merchantCallbackUrl, String vpa, String bankAccountString, boolean isStaging, Promise promise) {
         Bundle bundle = new Bundle();
-        Intent intent = setupIntentMetadata(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled, customEndpoint, merchantCallbackUrl);
+        Intent intent = setupIntentMetadata(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled, customEndpoint, merchantCallbackUrl, isStaging);
         intent.putExtra("paymentAction", "FETCH_UPI_BALANCE");
         intent.putExtra("vpa", vpa);
         intent.putExtra("bankAccountString", bankAccountString);
@@ -160,21 +161,24 @@ public class RNPaytmCustomuiSdkModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void userHasSavedInstruments(String mid, Promise promise) {
+    public void userHasSavedInstruments(String mid, boolean isStaging, Promise promise) {
+        initPaytmSdk(isStaging);
         PaytmPaymentsUtilRepository paymentsUtilRepository = PaytmSDK.getPaymentsUtilRepository();
         boolean hasInstruments = paymentsUtilRepository.userHasSavedInstruments(reactContext, mid);
         promise.resolve(hasInstruments);
     }
 
     @ReactMethod
-    public void getLastNBSavedBank(Promise promise) {
+    public void getLastNBSavedBank(boolean isStaging, Promise promise) {
+        initPaytmSdk(isStaging);
         PaytmPaymentsUtilRepository paymentsUtilRepository = PaytmSDK.getPaymentsUtilRepository();
         String bank = paymentsUtilRepository.getLastNBSavedBank();
         promise.resolve(bank);
     }
 
     @ReactMethod
-    public void getLastSavedVPA(Promise promise) {
+    public void getLastSavedVPA(boolean isStaging, Promise promise) {
+        initPaytmSdk(isStaging);
         PaytmPaymentsUtilRepository paymentsUtilRepository = PaytmSDK.getPaymentsUtilRepository();
         String bank = paymentsUtilRepository.getLastNBSavedBank();
         promise.resolve(bank);
@@ -206,7 +210,7 @@ public class RNPaytmCustomuiSdkModule extends ReactContextBaseJavaModule {
     }
 
     private Intent setupIntentMetadata(String mid, String orderId, String txnToken, double amount, boolean isAssistEnabled, boolean loggingEnabled,
-                                     String customEndpoint, String merchantCallbackUrl) {
+                                     String customEndpoint, String merchantCallbackUrl, boolean isStaging) {
         Intent intent = new Intent(reactContext, PaymentProcessActivity.class);
         intent.putExtra("orderId", orderId);
         intent.putExtra("mid", mid);
@@ -216,6 +220,16 @@ public class RNPaytmCustomuiSdkModule extends ReactContextBaseJavaModule {
         intent.putExtra("loggingEnabled", loggingEnabled);
         intent.putExtra("customEndpoint", customEndpoint);
         intent.putExtra("merchantCallbackUrl", merchantCallbackUrl);
+        intent.putExtra("isStaging", isStaging);
         return intent;
+    }
+
+    private void initPaytmSdk(boolean isStaging) {
+        if(isStaging){
+            PaytmSDK.setServer(Server.STAGING);
+        } else {
+            PaytmSDK.setServer(Server.PRODUCTION);
+        }
+
     }
 }

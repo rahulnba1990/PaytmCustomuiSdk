@@ -1,21 +1,27 @@
 package com.paytm.customui;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.facebook.react.bridge.ActivityEventListener;
+import com.facebook.react.bridge.BaseActivityEventListener;
 import com.facebook.react.bridge.Promise;
 import com.google.gson.Gson;
 
 import net.one97.paytm.nativesdk.PaytmSDK;
 import net.one97.paytm.nativesdk.app.PaytmSDKCallbackListener;
+import net.one97.paytm.nativesdk.common.Constants.SDKConstants;
 import net.one97.paytm.nativesdk.dataSource.PaytmPaymentsUtilRepository;
 import net.one97.paytm.nativesdk.dataSource.models.UpiDataRequestModel;
 import net.one97.paytm.nativesdk.dataSource.models.UpiIntentRequestModel;
 import net.one97.paytm.nativesdk.dataSource.models.WalletRequestModel;
 import net.one97.paytm.nativesdk.instruments.upicollect.models.UpiOptionsModel;
 import net.one97.paytm.nativesdk.transcation.model.TransactionInfo;
+import net.one97.paytm.nativesdk.Utils.Server;
 
 import java.util.List;
 
@@ -34,6 +40,37 @@ public class PaymentProcessActivity extends AppCompatActivity implements PaytmSD
     public void onBackPressed() {
         //do nothing
     }
+
+    private final ActivityEventListener mActivityEventListener = new BaseActivityEventListener() {
+
+        @Override
+        public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
+            super.onActivityResult(requestCode, resultCode, data);
+            if (mPromise != null) {
+                switch (requestCode) {
+                    case SDKConstants.REQUEST_CODE_UPI_APP:
+                        String result = data.getStringExtra("Status");
+                        if (result != null && result.equalsIgnoreCase("SUCCESS")) {
+                            //mPromise.resolve("SUCCESS");
+                            Intent mIntent = new Intent();
+                            mIntent.putExtra("response", "TXN_SUCCESS");
+                            setResult(RESULT_OK, mIntent);
+                            finish();
+                            paytmSDK.clear();
+                        } else {
+                            Intent mIntent = new Intent();
+                            mIntent.putExtra("response", "TXN_FAILURE");
+                            setResult(RESULT_OK, mIntent);
+                            finish();
+                            paytmSDK.clear();
+                        }
+                        break;
+                    default:
+
+                }
+            }
+        }
+    };
 
 
     @Override
@@ -71,6 +108,7 @@ public class PaymentProcessActivity extends AppCompatActivity implements PaytmSD
         boolean loggingEnabled = intent.getBooleanExtra("loggingEnabled", false);
         String customEndpoint = intent.getStringExtra("customEndpoint");
         String merchantCallbackUrl = intent.getStringExtra("merchantCallbackUrl");
+        boolean isStaging = intent.getBooleanExtra("isStaging", false);
         PaytmSDK.Builder builder = new PaytmSDK.Builder(this, mid, orderId, txnToken, amount, this);
         builder.setAssistEnabled(isAssistEnabled);
         builder.setLoggingEnabled(loggingEnabled);
@@ -79,6 +117,11 @@ public class PaymentProcessActivity extends AppCompatActivity implements PaytmSD
         }
         if (merchantCallbackUrl != null) {
             builder.setMerchantCallbackUrl(merchantCallbackUrl);
+        }
+        if (isStaging) {
+            PaytmSDK.setServer(Server.STAGING);
+        } else {
+                PaytmSDK.setServer(Server.PRODUCTION);
         }
         paytmSDK = builder.build();
     }
@@ -104,6 +147,7 @@ public class PaymentProcessActivity extends AppCompatActivity implements PaytmSD
         for (UpiOptionsModel app : apps) {
             if (app.getAppName().equalsIgnoreCase(selectedAppName)) {
                 UpiIntentRequestModel upiCollectRequestModel = new UpiIntentRequestModel(paymentFlow, selectedAppName, app.getResolveInfo().activityInfo);
+                Toast.makeText(this, "txn started", Toast.LENGTH_LONG).show();
                 paytmSDK.startTransaction(this, upiCollectRequestModel);
             }
         }
