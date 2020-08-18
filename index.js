@@ -8,8 +8,8 @@ class PaytmCustomuiSdk {
         return RNPaytmCustomuiSdk.isPaytmAppInstalled();
     }
 
-    static fetchAuthCode(clientId, isStaging) {
-        return RNPaytmCustomuiSdk.fetchAuthCode(clientId, isStaging);
+    static fetchAuthCode(clientId) {
+        return RNPaytmCustomuiSdk.fetchAuthCode(clientId);
     }
 
     static getUPIAppsInstalled() {
@@ -17,43 +17,43 @@ class PaytmCustomuiSdk {
     }
 
     static startWalletTransaction(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled,
-                        customEndpoint, merchantCallbackUrl, paymentFlow, isStaging) {
+                        customEndpoint, merchantCallbackUrl, paymentFlow) {
         return RNPaytmCustomuiSdk.startWalletTransaction(mid, orderId, txnToken, amount,
-            isAssistEnabled, loggingEnabled, customEndpoint, merchantCallbackUrl, paymentFlow, isStaging);
+            isAssistEnabled, loggingEnabled, customEndpoint, merchantCallbackUrl, paymentFlow);
     }
 
     static startUPIIntentTransaction(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled,
-                                  customEndpoint, merchantCallbackUrl, paymentFlow, appName, isStaging) {
+                                  customEndpoint, merchantCallbackUrl, paymentFlow, appName) {
         return RNPaytmCustomuiSdk.startUPIIntentTransaction(mid, orderId, txnToken, amount,
-            isAssistEnabled, loggingEnabled, customEndpoint, merchantCallbackUrl, paymentFlow, appName, isStaging);
+            isAssistEnabled, loggingEnabled, customEndpoint, merchantCallbackUrl, paymentFlow, appName);
     }
 
     static fetchUPIBalance(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled,
-                                  customEndpoint, merchantCallbackUrl, upiId, bankAccountJson, isStaging) {
+                                  customEndpoint, merchantCallbackUrl, upiId, bankAccountJson) {
         return RNPaytmCustomuiSdk.fetchUPIBalance(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled,
-                                  customEndpoint, merchantCallbackUrl, upiId, bankAccountJson, isStaging);
+                                  customEndpoint, merchantCallbackUrl, upiId, bankAccountJson);
     }
 
     static setUpiMpin(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled,
-                                  customEndpoint, merchantCallbackUrl, vpa, bankAccountString, isStaging) {
+                                  customEndpoint, merchantCallbackUrl, vpa, bankAccountString) {
         return RNPaytmCustomuiSdk.setUpiMpin(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled,
-                                  customEndpoint, merchantCallbackUrl, vpa, bankAccountString, isStaging);
+                                  customEndpoint, merchantCallbackUrl, vpa, bankAccountString);
     }
 
-    static userHasSavedInstruments(mid, isStaging) {
-        return RNPaytmCustomuiSdk.userHasSavedInstruments(mid, isStaging);
+    static userHasSavedInstruments(mid) {
+        return RNPaytmCustomuiSdk.userHasSavedInstruments(mid);
     }
 
-    static getLastNBSavedBank(isStaging) {
-        return RNPaytmCustomuiSdk.getLastNBSavedBank(isStaging);
+    static getLastNBSavedBank() {
+        return RNPaytmCustomuiSdk.getLastNBSavedBank();
     }
 
-    static getLastSavedVPA(isStaging) {
-        return RNPaytmCustomuiSdk.getLastSavedVPA(isStaging);
+    static getLastSavedVPA() {
+        return RNPaytmCustomuiSdk.getLastSavedVPA();
     }
 
-    static getNetBankingList(isStaging) {
-        return RNPaytmCustomuiSdk.getNetBankingList(isStaging);
+    static getNetBankingList() {
+        return RNPaytmCustomuiSdk.getNetBankingList();
     }
 }
 
