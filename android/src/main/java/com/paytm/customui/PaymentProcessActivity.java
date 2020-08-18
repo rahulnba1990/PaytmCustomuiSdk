@@ -21,7 +21,6 @@ import net.one97.paytm.nativesdk.dataSource.models.UpiIntentRequestModel;
 import net.one97.paytm.nativesdk.dataSource.models.WalletRequestModel;
 import net.one97.paytm.nativesdk.instruments.upicollect.models.UpiOptionsModel;
 import net.one97.paytm.nativesdk.transcation.model.TransactionInfo;
-import net.one97.paytm.nativesdk.Utils.Server;
 
 import java.util.List;
 
@@ -108,7 +107,6 @@ public class PaymentProcessActivity extends AppCompatActivity implements PaytmSD
         boolean loggingEnabled = intent.getBooleanExtra("loggingEnabled", false);
         String customEndpoint = intent.getStringExtra("customEndpoint");
         String merchantCallbackUrl = intent.getStringExtra("merchantCallbackUrl");
-        boolean isStaging = intent.getBooleanExtra("isStaging", false);
         PaytmSDK.Builder builder = new PaytmSDK.Builder(this, mid, orderId, txnToken, amount, this);
         builder.setAssistEnabled(isAssistEnabled);
         builder.setLoggingEnabled(loggingEnabled);
@@ -117,11 +115,6 @@ public class PaymentProcessActivity extends AppCompatActivity implements PaytmSD
         }
         if (merchantCallbackUrl != null) {
             builder.setMerchantCallbackUrl(merchantCallbackUrl);
-        }
-        if (isStaging) {
-            PaytmSDK.setServer(Server.STAGING);
-        } else {
-                PaytmSDK.setServer(Server.PRODUCTION);
         }
         paytmSDK = builder.build();
     }

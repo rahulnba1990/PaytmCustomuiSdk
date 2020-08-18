@@ -7,13 +7,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="77cb095f-8134-4866-b87a-a8185424c940" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.gradle/6.1.1/fileHashes/fileHashes.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/6.1.1/fileHashes/fileHashes.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/caches/build_file_checksums.ser" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/build_file_checksums.ser" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_android_volley_volley_1_1_1_aar.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__com_android_volley_volley_1_1_1_aar.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_facebook_fresco_imagepipeline_0_8_1_aar.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__com_facebook_fresco_imagepipeline_0_8_1_aar.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_facebook_react_react_native_0_20_1_aar.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__com_facebook_react_react_native_0_20_1_aar.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules/android.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules/android.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/paytm/customui/PaymentProcessActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/paytm/customui/PaymentProcessActivity.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/paytm/customui/RNPaytmCustomuiSdkModule.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/paytm/customui/RNPaytmCustomuiSdkModule.java" afterDir="false" />
