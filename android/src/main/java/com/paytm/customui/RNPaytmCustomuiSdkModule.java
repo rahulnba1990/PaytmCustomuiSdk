@@ -249,6 +249,9 @@ public class RNPaytmCustomuiSdkModule extends ReactContextBaseJavaModule impleme
                 String s = new Gson().toJson(transactionInfo.getTxnInfo());
                 mPromise.resolve(s);
                 paytmSDK.clear();
+            } else {
+                mPromise.resolve("TXN_FAILURE");
+                paytmSDK.clear();
             }
         } else {
             mPromise.resolve("TXN_FAILURE");
