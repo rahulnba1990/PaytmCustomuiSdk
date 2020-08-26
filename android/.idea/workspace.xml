@@ -7,7 +7,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="77cb095f-8134-4866-b87a-a8185424c940" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/modules/android.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules/android.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/paytm/customui/RNPaytmCustomuiSdkModule.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/paytm/customui/RNPaytmCustomuiSdkModule.java" afterDir="false" />
     </list>

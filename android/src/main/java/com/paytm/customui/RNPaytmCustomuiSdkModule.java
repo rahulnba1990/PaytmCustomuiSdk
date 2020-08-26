@@ -63,7 +63,7 @@ public class RNPaytmCustomuiSdkModule extends ReactContextBaseJavaModule impleme
                         if (result != null && result.equalsIgnoreCase("SUCCESS")) {
                             PaytmSDK.getPaymentsHelper().makeUPITransactionStatusRequest(instance.getCurrentActivity(), RNPaytmCustomuiSdkModule.paymentFlow);
                         } else {
-                            mPromise.resolve(data.getStringExtra("Status"));
+                            mPromise.resolve("TXN_FAILED");
                             paytmSDK.clear();
                         }
                         break;
@@ -250,30 +250,30 @@ public class RNPaytmCustomuiSdkModule extends ReactContextBaseJavaModule impleme
                 mPromise.resolve(s);
                 paytmSDK.clear();
             } else {
-                mPromise.resolve("TXN_FAILURE");
+                mPromise.resolve("TXN_FAILED");
                 paytmSDK.clear();
             }
         } else {
-            mPromise.resolve("TXN_FAILURE");
+            mPromise.resolve("TXN_FAILED");
             paytmSDK.clear();
         }
     }
 
     @Override
     public void networkError() {
-        mPromise.resolve("NETWORK_ERROR");
+        mPromise.resolve("TXN_FAILED");
         paytmSDK.clear();
     }
 
     @Override
     public void onBackPressedCancelTransaction() {
-        mPromise.resolve("USER_CANCELLED");
+        mPromise.resolve("TXN_FAILED");
         paytmSDK.clear();
     }
 
     @Override
     public void onGenericError(int i, String s) {
-        mPromise.resolve("GENERIC_ERROR:"+s);
+        mPromise.resolve("TXN_FAILED");
         paytmSDK.clear();
     }
 }
