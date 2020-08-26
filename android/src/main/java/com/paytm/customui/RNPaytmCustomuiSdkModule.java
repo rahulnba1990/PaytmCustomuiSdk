@@ -3,7 +3,6 @@ package com.paytm.customui;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.Bundle;
 
 import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.BaseActivityEventListener;
@@ -15,11 +14,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 
 import net.one97.paytm.nativesdk.PaytmSDK;
+import net.one97.paytm.nativesdk.app.PaytmSDKCallbackListener;
 import net.one97.paytm.nativesdk.common.Constants.SDKConstants;
 import net.one97.paytm.nativesdk.common.widget.PaytmConsentCheckBox;
 import net.one97.paytm.nativesdk.dataSource.PaytmPaymentsUtilRepository;
+import net.one97.paytm.nativesdk.dataSource.models.UpiDataRequestModel;
+import net.one97.paytm.nativesdk.dataSource.models.UpiIntentRequestModel;
+import net.one97.paytm.nativesdk.dataSource.models.WalletRequestModel;
 import net.one97.paytm.nativesdk.instruments.upicollect.models.UpiOptionsModel;
 import net.one97.paytm.nativesdk.paymethods.datasource.PaymentMethodDataSource;
+import net.one97.paytm.nativesdk.transcation.model.TransactionInfo;
 
 import org.json.JSONObject;
 
@@ -29,34 +33,37 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-public class RNPaytmCustomuiSdkModule extends ReactContextBaseJavaModule {
+public class RNPaytmCustomuiSdkModule extends ReactContextBaseJavaModule implements PaytmSDKCallbackListener {
 
     private final ReactApplicationContext reactContext;
     private Promise mPromise;
     private PaytmPaymentsUtilRepository paymentsUtilRepository = PaytmSDK.getPaymentsUtilRepository();
+    private PaytmSDK paytmSDK = null;
+    private static String paymentFlow;
     private final int FETCH_UPI_BALANCE_REQUEST_CODE = 100;
     private final int SET_UPI_MPIN_REQUEST_CODE = 101;
     private final int TXN_START_CODE = 103;
 
-    private final ActivityEventListener mActivityEventListener = new BaseActivityEventListener() {
-
+    private ActivityEventListener activityEventListener = new BaseActivityEventListener() {
         @Override
         public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
-            super.onActivityResult(requestCode, resultCode, data);
             if (mPromise != null) {
                 switch (requestCode) {
                     case FETCH_UPI_BALANCE_REQUEST_CODE:
                         mPromise.resolve(data.getStringExtra("response"));
+                        paytmSDK.clear();
                         break;
                     case SET_UPI_MPIN_REQUEST_CODE:
                         mPromise.resolve(data.getStringExtra("response"));
+                        paytmSDK.clear();
                         break;
                     case SDKConstants.REQUEST_CODE_UPI_APP:
                         String result = data.getStringExtra("Status");
                         if (result != null && result.equalsIgnoreCase("SUCCESS")) {
-                            mPromise.resolve("SUCCESS");
+                            PaytmSDK.getPaymentsHelper().makeUPITransactionStatusRequest(reactContext, RNPaytmCustomuiSdkModule.paymentFlow);
                         } else {
                             mPromise.resolve(data.getStringExtra("Status"));
+                            paytmSDK.clear();
                         }
                         break;
                     case TXN_START_CODE:
@@ -71,7 +78,7 @@ public class RNPaytmCustomuiSdkModule extends ReactContextBaseJavaModule {
 
     public RNPaytmCustomuiSdkModule(ReactApplicationContext reactContext) {
         super(reactContext);
-        reactContext.addActivityEventListener(mActivityEventListener);
+        reactContext.addActivityEventListener(activityEventListener);
         this.reactContext = reactContext;
     }
 
@@ -113,48 +120,60 @@ public class RNPaytmCustomuiSdkModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void startWalletTransaction(String mid, String orderId, String txnToken, double amount, boolean isAssistEnabled, boolean loggingEnabled,
                              String customEndpoint, String merchantCallbackUrl, String paymentFlow, Promise promise) {
-        Bundle bundle = new Bundle();
-        Intent intent = setupIntentMetadata(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled, customEndpoint, merchantCallbackUrl);
-        intent.putExtra("paymentAction", "WALLET");
-        intent.putExtra("paymentFlow", paymentFlow);
-        reactContext.startActivityForResult(intent, TXN_START_CODE, bundle);
+        initPaytmSdk(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled, customEndpoint, merchantCallbackUrl);
+        if (paymentFlow == null) {
+            paymentFlow = "NONE";
+        }
+        RNPaytmCustomuiSdkModule.paymentFlow = paymentFlow;
+        WalletRequestModel walletRequestModel = new WalletRequestModel(paymentFlow);
+        paytmSDK.startTransaction(this.getCurrentActivity(), walletRequestModel);
         mPromise = promise;
     }
 
     @ReactMethod
     public void startUPIIntentTransaction(String mid, String orderId, String txnToken, double amount, boolean isAssistEnabled, boolean loggingEnabled,
                                        String customEndpoint, String merchantCallbackUrl, String paymentFlow, String appName, Promise promise) {
-        Bundle bundle = new Bundle();
-        Intent intent = setupIntentMetadata(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled, customEndpoint, merchantCallbackUrl);
-        intent.putExtra("paymentAction", "UPI_INTENT");
-        intent.putExtra("paymentFlow", paymentFlow);
-        intent.putExtra("appName", appName);
-        reactContext.startActivityForResult(intent, TXN_START_CODE, bundle);
+        initPaytmSdk(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled, customEndpoint, merchantCallbackUrl);
+        if (paymentFlow == null) {
+            paymentFlow = "NONE";
+        }
+        RNPaytmCustomuiSdkModule.paymentFlow = paymentFlow;
+        List<UpiOptionsModel> apps = PaytmSDK.getPaymentsHelper().getUpiAppsInstalled(this.reactContext);
+        for (UpiOptionsModel app : apps) {
+            if (app.getAppName().equalsIgnoreCase(appName)) {
+                UpiIntentRequestModel upiCollectRequestModel = new UpiIntentRequestModel(paymentFlow, appName, app.getResolveInfo().activityInfo);
+                paytmSDK.startTransaction(this.getCurrentActivity(), upiCollectRequestModel);
+            }
+        }
         mPromise = promise;
     }
 
     @ReactMethod
     public void fetchUPIBalance(String mid, String orderId, String txnToken, double amount, boolean isAssistEnabled, boolean loggingEnabled,
                                 String customEndpoint, String merchantCallbackUrl, String upiId, String bankAccountJson, Promise promise) {
-        Bundle bundle = new Bundle();
-        Intent intent = setupIntentMetadata(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled, customEndpoint, merchantCallbackUrl);
-        intent.putExtra("paymentAction", "FETCH_UPI_BALANCE");
-        intent.putExtra("upiId", upiId);
-        intent.putExtra("bankAccountJson", bankAccountJson);
-        reactContext.startActivityForResult(intent, FETCH_UPI_BALANCE_REQUEST_CODE, bundle);
-        mPromise = promise;
+        initPaytmSdk(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled, customEndpoint, merchantCallbackUrl);
+        if (upiId != null && bankAccountJson != null) {
+            UpiDataRequestModel upiDataRequestModel = new UpiDataRequestModel(upiId, bankAccountJson, FETCH_UPI_BALANCE_REQUEST_CODE);
+            paytmSDK.fetchUpiBalance(this.getReactApplicationContext(), upiDataRequestModel);
+            mPromise = promise;
+        } else {
+            promise.resolve("Required params missing.");
+            paytmSDK.clear();
+        }
     }
 
     @ReactMethod
     public void setUpiMpin(String mid, String orderId, String txnToken, double amount, boolean isAssistEnabled, boolean loggingEnabled,
                            String customEndpoint, String merchantCallbackUrl, String vpa, String bankAccountString, Promise promise) {
-        Bundle bundle = new Bundle();
-        Intent intent = setupIntentMetadata(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled, customEndpoint, merchantCallbackUrl);
-        intent.putExtra("paymentAction", "FETCH_UPI_BALANCE");
-        intent.putExtra("vpa", vpa);
-        intent.putExtra("bankAccountString", bankAccountString);
-        reactContext.startActivityForResult(intent, SET_UPI_MPIN_REQUEST_CODE, bundle);
-        mPromise = promise;
+        initPaytmSdk(mid, orderId, txnToken, amount, isAssistEnabled, loggingEnabled, customEndpoint, merchantCallbackUrl);
+        if (vpa != null && bankAccountString != null) {
+            UpiDataRequestModel upiDataRequestModel = new UpiDataRequestModel(vpa, bankAccountString, SET_UPI_MPIN_REQUEST_CODE);
+            paytmSDK.fetchUpiBalance(this.getReactApplicationContext(), upiDataRequestModel);
+            mPromise = promise;
+        } else {
+            promise.resolve("Required params missing.");
+            paytmSDK.clear();
+        }
     }
 
     @ReactMethod
@@ -203,17 +222,49 @@ public class RNPaytmCustomuiSdkModule extends ReactContextBaseJavaModule {
         PaytmSDK.getPaymentsHelper().getNBList(netBankListCallBack);
     }
 
-    private Intent setupIntentMetadata(String mid, String orderId, String txnToken, double amount, boolean isAssistEnabled, boolean loggingEnabled,
-                                     String customEndpoint, String merchantCallbackUrl) {
-        Intent intent = new Intent(reactContext, PaymentProcessActivity.class);
-        intent.putExtra("orderId", orderId);
-        intent.putExtra("mid", mid);
-        intent.putExtra("amount", amount);
-        intent.putExtra("txnToken", txnToken);
-        intent.putExtra("isAssistEnabled", isAssistEnabled);
-        intent.putExtra("loggingEnabled", loggingEnabled);
-        intent.putExtra("customEndpoint", customEndpoint);
-        intent.putExtra("merchantCallbackUrl", merchantCallbackUrl);
-        return intent;
+    private void initPaytmSdk(String mid, String orderId, String txnToken, double amount, boolean isAssistEnabled, boolean loggingEnabled,
+                              String customEndpoint, String merchantCallbackUrl) {
+        PaytmSDK.Builder builder = new PaytmSDK.Builder(this.reactContext, mid, orderId, txnToken, amount, this);
+        builder.setAssistEnabled(isAssistEnabled);
+        builder.setLoggingEnabled(loggingEnabled);
+        if (customEndpoint != null) {
+            builder.setCustomEndPoint("");
+        }
+        if (merchantCallbackUrl != null) {
+            builder.setMerchantCallbackUrl(merchantCallbackUrl);
+        }
+        paytmSDK = builder.build();
+    }
+
+    @Override
+    public void onTransactionResponse(TransactionInfo transactionInfo) {
+        if (transactionInfo != null) {
+            if (transactionInfo.getTxnInfo() != null) {
+                String s = new Gson().toJson(transactionInfo.getTxnInfo());
+                mPromise.resolve(s);
+                paytmSDK.clear();
+            }
+        } else {
+            mPromise.resolve("TXN_FAILURE");
+            paytmSDK.clear();
+        }
+    }
+
+    @Override
+    public void networkError() {
+        mPromise.resolve("NETWORK_ERROR");
+        paytmSDK.clear();
+    }
+
+    @Override
+    public void onBackPressedCancelTransaction() {
+        mPromise.resolve("USER_CANCELLED");
+        paytmSDK.clear();
+    }
+
+    @Override
+    public void onGenericError(int i, String s) {
+        mPromise.resolve("GENERIC_ERROR:"+s);
+        paytmSDK.clear();
     }
 }
