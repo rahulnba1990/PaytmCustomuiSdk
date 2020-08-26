@@ -43,6 +43,7 @@ public class RNPaytmCustomuiSdkModule extends ReactContextBaseJavaModule impleme
     private final int FETCH_UPI_BALANCE_REQUEST_CODE = 100;
     private final int SET_UPI_MPIN_REQUEST_CODE = 101;
     private final int TXN_START_CODE = 103;
+    private RNPaytmCustomuiSdkModule instance = this;
 
     private ActivityEventListener activityEventListener = new BaseActivityEventListener() {
         @Override
@@ -60,7 +61,7 @@ public class RNPaytmCustomuiSdkModule extends ReactContextBaseJavaModule impleme
                     case SDKConstants.REQUEST_CODE_UPI_APP:
                         String result = data.getStringExtra("Status");
                         if (result != null && result.equalsIgnoreCase("SUCCESS")) {
-                            PaytmSDK.getPaymentsHelper().makeUPITransactionStatusRequest(reactContext, RNPaytmCustomuiSdkModule.paymentFlow);
+                            PaytmSDK.getPaymentsHelper().makeUPITransactionStatusRequest(instance.getCurrentActivity(), RNPaytmCustomuiSdkModule.paymentFlow);
                         } else {
                             mPromise.resolve(data.getStringExtra("Status"));
                             paytmSDK.clear();
@@ -70,7 +71,6 @@ public class RNPaytmCustomuiSdkModule extends ReactContextBaseJavaModule impleme
                         mPromise.resolve(data.getStringExtra("response"));
                         break;
                     default:
-
                 }
             }
         }
@@ -139,13 +139,19 @@ public class RNPaytmCustomuiSdkModule extends ReactContextBaseJavaModule impleme
         }
         RNPaytmCustomuiSdkModule.paymentFlow = paymentFlow;
         List<UpiOptionsModel> apps = PaytmSDK.getPaymentsHelper().getUpiAppsInstalled(this.reactContext);
+        boolean found = false;
         for (UpiOptionsModel app : apps) {
             if (app.getAppName().equalsIgnoreCase(appName)) {
                 UpiIntentRequestModel upiCollectRequestModel = new UpiIntentRequestModel(paymentFlow, appName, app.getResolveInfo().activityInfo);
                 paytmSDK.startTransaction(this.getCurrentActivity(), upiCollectRequestModel);
+                found = true;
             }
         }
-        mPromise = promise;
+        if(found){
+            mPromise = promise;
+        } else{
+            promise.resolve(appName + " app not found on device");
+        }
     }
 
     @ReactMethod
