@@ -1,6 +1,6 @@
 {
   "name": "react-native-paytm-customui-sdk",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "description": "This library is a react native implementation of Paytm's custom-ui SDK android/ios.\r For more information you can visit https://developer.paytm.com/docs/custom-ui-sdk.\r Current version works for Android only. Will support ios integration very soon.",
   "main": "index.js",
   "scripts": {

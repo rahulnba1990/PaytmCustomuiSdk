@@ -48,30 +48,40 @@ public class RNPaytmCustomuiSdkModule extends ReactContextBaseJavaModule impleme
     private ActivityEventListener activityEventListener = new BaseActivityEventListener() {
         @Override
         public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
-            if (mPromise != null) {
-                switch (requestCode) {
-                    case FETCH_UPI_BALANCE_REQUEST_CODE:
-                        mPromise.resolve(data.getStringExtra("response"));
-                        paytmSDK.clear();
-                        break;
-                    case SET_UPI_MPIN_REQUEST_CODE:
-                        mPromise.resolve(data.getStringExtra("response"));
-                        paytmSDK.clear();
-                        break;
-                    case SDKConstants.REQUEST_CODE_UPI_APP:
-                        String result = data.getStringExtra("Status");
-                        if (result != null && result.equalsIgnoreCase("SUCCESS")) {
-                            PaytmSDK.getPaymentsHelper().makeUPITransactionStatusRequest(instance.getCurrentActivity(), RNPaytmCustomuiSdkModule.paymentFlow);
-                        } else {
+            try {
+                if (mPromise != null && data != null) {
+                    switch (requestCode) {
+                        case FETCH_UPI_BALANCE_REQUEST_CODE:
+                            mPromise.resolve(data.getStringExtra("response"));
+                            paytmSDK.clear();
+                            break;
+                        case SET_UPI_MPIN_REQUEST_CODE:
+                            mPromise.resolve(data.getStringExtra("response"));
+                            paytmSDK.clear();
+                            break;
+                        case SDKConstants.REQUEST_CODE_UPI_APP:
+                            String result = data.getStringExtra("Status");
+                            if (result != null && result.equalsIgnoreCase("SUCCESS")) {
+                                PaytmSDK.getPaymentsHelper().makeUPITransactionStatusRequest(instance.getCurrentActivity(), RNPaytmCustomuiSdkModule.paymentFlow);
+                            } else {
+                                mPromise.resolve("TXN_FAILED");
+                                paytmSDK.clear();
+                            }
+                            break;
+                        case TXN_START_CODE:
+                            mPromise.resolve(data.getStringExtra("response"));
+                            break;
+                        default:
                             mPromise.resolve("TXN_FAILED");
                             paytmSDK.clear();
-                        }
-                        break;
-                    case TXN_START_CODE:
-                        mPromise.resolve(data.getStringExtra("response"));
-                        break;
-                    default:
+                    }
+                } else if(data == null){
+                    mPromise.resolve("TXN_FAILED");
+                    paytmSDK.clear();
                 }
+            } catch (Exception e){
+                mPromise.resolve("TXN_FAILED");
+                paytmSDK.clear();
             }
         }
     };
