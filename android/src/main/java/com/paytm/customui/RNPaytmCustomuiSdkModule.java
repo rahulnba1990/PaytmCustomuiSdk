@@ -3,6 +3,7 @@ package com.paytm.customui;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.widget.Toast;
 
 import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.BaseActivityEventListener;
@@ -35,7 +36,7 @@ import javax.annotation.Nullable;
 
 public class RNPaytmCustomuiSdkModule extends ReactContextBaseJavaModule implements PaytmSDKCallbackListener {
 
-    private final ReactApplicationContext reactContext;
+    //private final ReactApplicationContext reactContext;
     private Promise mPromise;
     private PaytmPaymentsUtilRepository paymentsUtilRepository = PaytmSDK.getPaymentsUtilRepository();
     private PaytmSDK paytmSDK = null;
@@ -61,7 +62,8 @@ public class RNPaytmCustomuiSdkModule extends ReactContextBaseJavaModule impleme
                             break;
                         case SDKConstants.REQUEST_CODE_UPI_APP:
                             String result = data.getStringExtra("Status");
-                            if (result != null && result.equalsIgnoreCase("SUCCESS")) {
+                            //Toast.makeText(activity, "upi status:"+result, Toast.LENGTH_SHORT).show();
+                            if (!"FAILED".equalsIgnoreCase(result) && !"FAILURE".equalsIgnoreCase(result)) {
                                 PaytmSDK.getPaymentsHelper().makeUPITransactionStatusRequest(instance.getCurrentActivity(), RNPaytmCustomuiSdkModule.paymentFlow);
                             } else {
                                 mPromise.resolve("TXN_FAILED");
@@ -89,7 +91,7 @@ public class RNPaytmCustomuiSdkModule extends ReactContextBaseJavaModule impleme
     public RNPaytmCustomuiSdkModule(ReactApplicationContext reactContext) {
         super(reactContext);
         reactContext.addActivityEventListener(activityEventListener);
-        this.reactContext = reactContext;
+        //this.reactContext = reactContext;
     }
 
     @Override
@@ -99,21 +101,21 @@ public class RNPaytmCustomuiSdkModule extends ReactContextBaseJavaModule impleme
 
     @ReactMethod
     public void isPaytmAppInstalled(Promise promise) {
-        boolean installed = paymentsUtilRepository.isPaytmAppInstalled(reactContext);
+        boolean installed = paymentsUtilRepository.isPaytmAppInstalled(this.getCurrentActivity());
         promise.resolve(installed);
     }
 
     @ReactMethod
     public void fetchAuthCode(String clientId, Promise promise) {
-        PaytmConsentCheckBox paytmConsentCheckBox = new PaytmConsentCheckBox(reactContext);
+        PaytmConsentCheckBox paytmConsentCheckBox = new PaytmConsentCheckBox(this.getCurrentActivity());
         paytmConsentCheckBox.setChecked(true);
-        String code = paymentsUtilRepository.fetchAuthCode(reactContext, clientId);
+        String code = paymentsUtilRepository.fetchAuthCode(this.getCurrentActivity(), clientId);
         promise.resolve(code);
     }
 
     @ReactMethod
     public void getUPIAppsInstalled(Promise promise) {
-        List<UpiOptionsModel> apps = PaytmSDK.getPaymentsHelper().getUpiAppsInstalled(reactContext);
+        List<UpiOptionsModel> apps = PaytmSDK.getPaymentsHelper().getUpiAppsInstalled(this.getCurrentActivity());
         List<String> appNames = new ArrayList<>();
         for (UpiOptionsModel app : apps) {
             appNames.add(app.getAppName());
@@ -148,7 +150,7 @@ public class RNPaytmCustomuiSdkModule extends ReactContextBaseJavaModule impleme
             paymentFlow = "NONE";
         }
         RNPaytmCustomuiSdkModule.paymentFlow = paymentFlow;
-        List<UpiOptionsModel> apps = PaytmSDK.getPaymentsHelper().getUpiAppsInstalled(this.reactContext);
+        List<UpiOptionsModel> apps = PaytmSDK.getPaymentsHelper().getUpiAppsInstalled(this.getCurrentActivity());
         boolean found = false;
         for (UpiOptionsModel app : apps) {
             if (app.getAppName().equalsIgnoreCase(appName)) {
@@ -195,7 +197,7 @@ public class RNPaytmCustomuiSdkModule extends ReactContextBaseJavaModule impleme
     @ReactMethod
     public void userHasSavedInstruments(String mid, Promise promise) {
         PaytmPaymentsUtilRepository paymentsUtilRepository = PaytmSDK.getPaymentsUtilRepository();
-        boolean hasInstruments = paymentsUtilRepository.userHasSavedInstruments(reactContext, mid);
+        boolean hasInstruments = paymentsUtilRepository.userHasSavedInstruments(this.getCurrentActivity(), mid);
         promise.resolve(hasInstruments);
     }
 
@@ -240,7 +242,7 @@ public class RNPaytmCustomuiSdkModule extends ReactContextBaseJavaModule impleme
 
     private void initPaytmSdk(String mid, String orderId, String txnToken, double amount, boolean isAssistEnabled, boolean loggingEnabled,
                               String customEndpoint, String merchantCallbackUrl) {
-        PaytmSDK.Builder builder = new PaytmSDK.Builder(this.reactContext, mid, orderId, txnToken, amount, this);
+        PaytmSDK.Builder builder = new PaytmSDK.Builder(this.getCurrentActivity(), mid, orderId, txnToken, amount, this);
         builder.setAssistEnabled(isAssistEnabled);
         builder.setLoggingEnabled(loggingEnabled);
         if (customEndpoint != null) {
@@ -257,6 +259,7 @@ public class RNPaytmCustomuiSdkModule extends ReactContextBaseJavaModule impleme
         if (transactionInfo != null) {
             if (transactionInfo.getTxnInfo() != null) {
                 String s = new Gson().toJson(transactionInfo.getTxnInfo());
+                //Toast.makeText(this.getCurrentActivity(), "txninfo:"+s, Toast.LENGTH_LONG).show();
                 mPromise.resolve(s);
                 paytmSDK.clear();
             } else {
